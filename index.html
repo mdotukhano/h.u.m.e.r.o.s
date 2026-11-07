@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HEX — HUMEROS Design Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0c0b;
+  --s1:#141310;
+  --s2:#1c1a17;
+  --s3:#242220;
+  --border:#2e2c29;
+  --border2:#3a3834;
+  --accent:#e8a020;
+  --accent-dim:rgba(232,160,32,0.1);
+  --accent-glow:rgba(232,160,32,0.06);
+  --text:#e2dfd8;
+  --text2:#9a9790;
+  --text3:#5c5a56;
+  --code-bg:#111009;
+  --green:#4a9e6b;
+  --blue:#4a7fe8;
+  --purple:#9b7be8;
+  --mono:"IBM Plex Mono",monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:6px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh;overflow-x:hidden}
+
+/* LANDING */
+#landing{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:4rem 2rem;max-width:900px;margin:0 auto}
+.land-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:2rem}
+.land-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2.4s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.land-label{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.08em}
+h1.hex-title{font-size:clamp(72px,12vw,140px);font-weight:300;letter-spacing:-4px;line-height:0.95;color:var(--text);margin-bottom:1rem;font-family:var(--sans)}
+.hex-full{font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.05em;line-height:1.8;margin-bottom:1.5rem}
+.hex-desc{font-size:17px;color:var(--text2);line-height:1.65;max-width:520px;margin-bottom:2.5rem}
+.land-cta{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#0d0c0b;padding:10px 24px;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity 0.15s;letter-spacing:0.01em}
+.btn-primary:hover{opacity:0.88}
+.land-meta{font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+/* CHAPTER GRID */
+#chapters{padding:2rem;max-width:900px;margin:0 auto}
+.section-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:1rem;text-transform:uppercase}
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:3rem}
+.ch-card{background:var(--s1);border:0.5px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color 0.15s,background 0.15s}
+.ch-card:hover{border-color:var(--border2);background:var(--s2)}
+.ch-card.active{border-color:var(--accent);background:var(--accent-dim)}
+.ch-num{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px;display:inline-block;margin-bottom:8px;font-weight:500}
+.ch-num.amber{background:rgba(232,160,32,0.15);color:var(--accent)}
+.ch-num.blue{background:rgba(74,127,232,0.15);color:var(--blue)}
+.ch-num.green{background:rgba(74,158,107,0.15);color:var(--green)}
+.ch-num.purple{background:rgba(155,123,232,0.15);color:var(--purple)}
+.ch-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.35;margin-bottom:4px}
+.ch-sub{font-size:11px;color:var(--text3);line-height:1.4}
+
+/* READER */
+#reader{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;overflow:hidden}
+#reader.open{display:flex}
+.r-sidebar{width:240px;flex-shrink:0;background:var(--s1);border-right:0.5px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;height:100vh}
+.r-top{padding:16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.r-brand{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);letter-spacing:0.04em}
+.r-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:4px;border-radius:4px}
+.r-close:hover{color:var(--text);background:var(--s2)}
+.r-nav{padding:8px;flex:1;overflow-y:auto}
+.r-ch-item{padding:8px 10px;border-radius:var(--r);cursor:pointer;margin-bottom:2px;transition:background 0.12s}
+.r-ch-item:hover{background:var(--s2)}
+.r-ch-item.active{background:var(--accent-dim);border:0.5px solid rgba(232,160,32,0.25)}
+.r-ch-num{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:2px}
+.r-ch-name{font-size:12px;color:var(--text2);line-height:1.3}
+.r-ch-item.active .r-ch-name{color:var(--accent)}
+.r-progress-wrap{padding:16px;border-top:0.5px solid var(--border)}
+.r-progress-label{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;justify-content:space-between;margin-bottom:6px}
+.r-progress-bar{height:2px;background:var(--border);border-radius:1px}
+.r-progress-fill{height:2px;background:var(--accent);border-radius:1px;transition:width 0.3s}
+
+.r-content{flex:1;overflow-y:auto;display:flex;flex-direction:column;height:100vh}
+.r-topbar{height:3px;background:var(--border);flex-shrink:0}
+.r-topbar-fill{height:3px;background:var(--accent);transition:width 0.3s}
+.r-article{flex:1;padding:3rem 4rem;max-width:780px;margin:0 auto;width:100%}
+.r-bottom{padding:20px 4rem;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:var(--bg)}
+.r-btn{background:var(--s1);border:0.5px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:var(--r);font-size:13px;cursor:pointer;transition:border-color 0.15s,color 0.15s;font-family:var(--sans)}
+.r-btn:hover{border-color:var(--border2);color:var(--text)}
+.r-btn:disabled{opacity:0.3;cursor:default}
+.r-ch-indicator{font-family:var(--mono);font-size:11px;color:var(--text3)}
+
+/* TYPOGRAPHY */
+.r-article h1{font-size:32px;font-weight:500;letter-spacing:-0.5px;line-height:1.2;color:var(--text);margin-bottom:0.5rem}
+.r-article .ch-eyebrow{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.08em;margin-bottom:1rem;display:block}
+.r-article h2{font-size:20px;font-weight:500;color:var(--text);margin:2.5rem 0 0.75rem;line-height:1.3}
+.r-article h3{font-size:16px;font-weight:500;color:var(--text2);margin:1.75rem 0 0.5rem;line-height:1.3}
+.r-article p{color:var(--text2);margin-bottom:1.1rem;max-width:68ch}
+.r-article p:first-of-type{font-size:16px;color:var(--text)}
+.r-article hr{border:none;border-top:0.5px solid var(--border);margin:2.5rem 0}
+.r-article ul,.r-article ol{margin-bottom:1.1rem;padding-left:1.5rem}
+.r-article li{color:var(--text2);margin-bottom:0.35rem}
+.r-article code{font-family:var(--mono);font-size:12.5px;background:var(--s2);padding:1px 5px;border-radius:3px;color:var(--accent)}
+.r-article pre{background:var(--code-bg);border:0.5px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;margin:1.25rem 0;overflow-x:auto;position:relative}
+.r-article pre code{background:none;padding:0;color:#c8c4b8;font-size:12.5px;line-height:1.65}
+.copy-btn{position:absolute;top:10px;right:10px;background:var(--s3);border:0.5px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer;transition:color 0.15s}
+.copy-btn:hover{color:var(--text)}
+.milestone{background:var(--accent-glow);border:0.5px solid rgba(232,160,32,0.2);border-radius:var(--r);padding:1rem 1.25rem;margin:2rem 0}
+.milestone-label{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.06em;margin-bottom:4px}
+.milestone p{margin:0;font-size:13px;color:var(--text2)}
+
+@media(max-width:700px){
+  .r-sidebar{display:none}
+  .r-article{padding:2rem 1.5rem}
+  .r-bottom{padding:16px 1.5rem}
+  h1.hex-title{letter-spacing:-2px}
+}
+body.light{--bg:#f5f3ef;--s1:#ece9e3;--s2:#e4e0d8;--s3:#d8d4cc;--border:#ccc8c0;--border2:#b8b4ac;--accent:#c47800;--accent-dim:rgba(196,120,0,0.08);--accent-glow:rgba(196,120,0,0.06);--text:#1a1916;--text2:#4a4844;--text3:#8a8880;--code-bg:#1a1917;}
+body.light .r-article p{color:var(--text2)}
+body.light .r-article p:first-of-type{color:var(--text)}
+body.light .r-article pre code{color:#c8c4b8}
+.theme-toggle{background:none;border:0.5px solid var(--border);color:var(--text3);padding:5px 10px;border-radius:var(--r);font-family:var(--mono);font-size:10px;cursor:pointer;transition:color 0.15s,border-color 0.15s;letter-spacing:0.04em}
+.theme-toggle:hover{color:var(--text);border-color:var(--border2)}
+</style>
+</head>
+<body>
+
+<section id="landing">
+  <div class="land-badge">
+    <div class="land-dot"></div>
+    <span class="land-label">DESIGN COMPLETE &middot; BUILD NOT STARTED</span>
+  </div>
+  <h1 class="hex-title">HEX</h1>
+  <p class="hex-full">H.U.M.E.R.O.S &mdash; Highly Utilitarian Machine for Execution, Reasoning, and Organized Systems</p>
+  <p class="hex-desc">A blueprint for building a personal AI system that knows you, runs entirely on free tools, and protects your thinking from everything that is not thinking.</p>
+  <div style="border:0.5px solid var(--border);border-left:2px solid var(--accent);background:var(--accent-glow);border-radius:var(--r);padding:14px 16px;max-width:520px;margin-bottom:2rem"><div style="font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px">STATUS &middot; NOVEMBER 2026</div><p style="font-size:13px;color:var(--text2);line-height:1.6;margin:0">The design is ready. HUMEROS itself is not built yet. Think of this as a trailer: the blueprint is published before the film. I will learn each piece as I build it, and this document will change as I do. Visit the design if you are curious.</p></div>
+  <div class="land-cta">
+    <button class="btn-primary" onclick="openReader(0)">Start Reading</button>
+    <span class="land-meta">by Muhammad Umer Khan &nbsp;&middot;&nbsp; MIT License</span>
+  </div>
+</section>
+
+<div style="position:fixed;top:20px;right:20px;z-index:50"><button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">light mode</button></div>
+<section id="chapters">
+  <p class="section-label">All Chapters</p>
+  <div class="chapter-grid" id="chapterGrid"></div>
+</section>
+
+<div id="reader">
+  <aside class="r-sidebar">
+    <div class="r-top">
+      <span class="r-brand">HUMEROS &mdash; HEX</span>
+      <div style="display:flex;gap:8px;align-items:center"><button class="theme-toggle" onclick="toggleTheme()" id="themeBtnR">light</button><button class="r-close" onclick="closeReader()" title="Close">&times;</button></div>
+    </div>
+    <nav class="r-nav" id="readerNav"></nav>
+    <div class="r-progress-wrap">
+      <div class="r-progress-label">
+        <span>Progress</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="r-progress-bar"><div class="r-progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+  </aside>
+  <div class="r-content" id="rContent">
+    <div class="r-topbar"><div class="r-topbar-fill" id="topbarFill" style="width:0%"></div></div>
+    <article class="r-article" id="rArticle"></article>
+    <div class="r-bottom">
+      <button class="r-btn" id="btnPrev" onclick="navigate(-1)">&#8592; Previous</button>
+      <span class="r-ch-indicator" id="chIndicator"></span>
+      <button class="r-btn" id="btnNext" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CHAPTERS = [
+{
+  num:"PRE",
+  color:"amber",
+  name:"Prologue",
+  sub:"The Lab Before the Lab",
+  content:`<span class="ch-eyebrow">PROLOGUE</span>
+<h1>The Lab Before the Lab</h1>
+<p>This document assumes you have opened Python at least once. It does not assume anything else.</p>
+<p>Which means before Chapter 0 there are three things worth getting comfortable with. Not mastering. Not deeply understanding. Just comfortable with, the way you are comfortable with a road you have driven twice. You know roughly where it goes and you do not panic when you see a turn coming.</p>
+<p>The three things are the terminal, Docker, and the concept of localhost. They appear constantly throughout HUMEROS. If you have seen them before, skim this and move on. If you have not, read it once slowly and then move on. Either way this chapter ends before it becomes a problem.</p>
+<hr>
+<h2>The Terminal</h2>
+<p>The terminal is a text interface to your computer. Instead of clicking on things, you type instructions and the computer executes them.</p>
+<p>That description makes it sound like a step backward from the graphical interfaces we all grew up with. In some ways it is. You cannot drag and drop in a terminal. There are no buttons to discover by hovering over them. If you type something wrong, the computer does what you typed, not what you meant.</p>
+<p>But the terminal is also the place where your computer does exactly what you tell it without asking if you are sure seventeen times. It is faster for certain things. It is the only interface some tools have. And for HUMEROS specifically, every installation command in this document goes through it, which means getting comfortable with it is not optional.</p>
+<p>On Windows, the terminal is called Command Prompt or PowerShell. Search for either in the Start menu. On Mac it is called Terminal and lives in Applications then Utilities. On Linux you already know where it is and are probably reading this paragraph out of curiosity.</p>
+<p>Open it now. You will see a blinking cursor and some text showing your current location in the file system. Nothing is running. Nothing is broken. This is just the computer waiting for an instruction.</p>
+<p>Here are the six commands HUMEROS actually uses. No more than six. Learn these and the terminal becomes a tool instead of a source of anxiety.</p>
+<pre><code class="language-bash"># Print the current directory you are in
+pwd
+
+# List the files and folders in the current directory
+ls
+
+# Move into a folder
+cd folder_name
+
+# Move up one level to the parent folder
+cd ..
+
+# Run a Python script
+python script_name.py
+
+# Install a Python library
+pip install library_name</code></pre>
+<p>That is the list. Everything else in this document that involves the terminal uses one of those six things or a command that comes with a tool you have just installed, meaning it is documented by that tool and you do not need to memorize it.</p>
+<p>One thing worth knowing before we move on. When the terminal shows an error, read it. The whole thing. All the way to the bottom where the actual error message lives, not the stack trace above it that looks scary. Most terminal errors are extremely literal. &ldquo;Module not found&rdquo; means you need to install something. &ldquo;Permission denied&rdquo; means you need to run the command differently. &ldquo;Command not found&rdquo; means the tool is not installed yet. The error is almost always telling you exactly what is wrong if you read the last line.</p>
+<hr>
+<h2>Docker</h2>
+<p>Docker is a tool that runs software inside containers.</p>
+<p>A container is an isolated environment that has everything a piece of software needs to run, its dependencies, its configuration, its runtime, packaged together in one place. The software runs inside the container. It does not touch the rest of your computer. It does not conflict with other software. When you are done with it, you stop the container and it is as if it was never there.</p>
+<p>The analogy I keep coming back to is a lunchbox. You pack a meal in a lunchbox. The lunchbox contains everything needed for that meal. You open it at lunch, use it, close it. The rest of your kitchen is unaffected.</p>
+<p>n8n runs inside Docker. The reason is that n8n has its own specific dependencies that would be tedious to install manually and would potentially conflict with other things on your PC. Inside Docker it just works, regardless of what else is on your machine.</p>
+<p>Docker Desktop is the version with a graphical interface. Go to <strong>docker.com/products/docker-desktop</strong>, download the version for your operating system, and run the installer. After the restart, Docker Desktop opens and shows a small whale icon in your taskbar. When that whale is there and Docker Desktop shows &ldquo;Engine running,&rdquo; Docker is ready.</p>
+<hr>
+<h2>Localhost and Ports</h2>
+<p>When HUMEROS runs on your PC, it is not on the internet. It is running locally, meaning it exists as a process on your machine and is only reachable from your machine.</p>
+<p>Localhost is the name your computer uses to refer to itself. When you type http://localhost into a browser, you are asking your browser to connect to a server running on the same machine.</p>
+<p>The number after the colon in http://localhost:5678 is the port. Ports are like apartment numbers. Your PC&rsquo;s internet connection is the building. The port is which apartment the software lives in. n8n listens on port 5678. A different tool might listen on port 3000. They all share the same internet connection but they each have their own door.</p>
+<p>Nothing running on localhost is accessible from outside your machine by default. Your phone cannot reach localhost:5678 on your PC just by knowing the URL. Chapter 5 covers how we solve this with Tailscale. For now, localhost means this machine only, which is actually a sensible and safe default for a system that holds your personal data.</p>
+<hr>
+<h2>Before You Start</h2>
+<p>Three things to have ready before Chapter 1.</p>
+<p>A PC that can stay on for reasonable stretches of the day. It does not need to be powerful. HUMEROS is not computationally heavy on the host machine.</p>
+<p>A smartphone running Android. The Tasker-based device integration in Chapter 6 is Android specific. iPhone users can replicate most of the same functionality through iOS Shortcuts, which is Apple&rsquo;s built-in automation tool and follows the same webhook-based pattern.</p>
+<p>A Telegram account. This is where HUMEROS delivers your briefings, receives your messages, and sends you notifications. If you already have one, you are ready. If not, download it and create an account before Chapter 8.</p>
+<p>That is everything. No credit card. No cloud subscription. No hardware you do not already own.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Terminal is open. Docker Desktop is installed and showing &ldquo;Engine running.&rdquo; You typed your first command and saw output. The lab is ready.</p></div>`
+},{
+  num:"00",
+  color:"amber",
+  name:"Why Your Brain Deserves a Copilot",
+  sub:"The philosophy.",
+  content:`<span class="ch-eyebrow">CHAPTER 0</span>
+<h1>Why Your Brain Deserves a Copilot</h1>
+<p>It was a random Tuesday. Or maybe a Wednesday. It does not matter.</p>
+<p>I was watching YouTube. Not watching watching &mdash; you know the kind. The kind where you started with one video about something actually useful, and then the algorithm did its thing, and forty minutes later you are watching a compilation of airport fails and you do not remember making that decision.</p>
+<p>I closed it. And then came the feeling.</p>
+<p>It is hard to describe but I will try because it is the whole reason HUMEROS exists. It is not boredom exactly. It is more like standing in the middle of a room and suddenly realizing you have no idea what you are supposed to be doing. Not in a crisis way. Just in a quiet, uncomfortable way. Like your brain looked at your life and sent you a notification that said &ldquo;hey, something is off&rdquo; but did not tell you what.</p>
+<p>I sat there and actually ran through my options. Sleep? No. Scroll more? Obviously not, that is what started this. Work on something? On what? I had ideas. I always have ideas. A 3D animation abandoned halfway. An n8n workflow built for fun and never used again. A web project untouched for three weeks. An AI assistant I had been designing in my head since I was first playing with local models on my PC.</p>
+<p>And that is when I understood the actual problem.</p>
+<p>It is not that I do not have things to do. I have too many things to do. It is not that I do not have goals. It is that without a system, goals are just thoughts you have and then forget by Thursday. I do not need more motivation. I do not need another productivity app with a clean interface and a monthly subscription. I need something that makes it structurally difficult to drift. Something that makes the path of least resistance point toward what I actually care about.</p>
+<p>I need a copilot.</p>
+<p>Not a manager. Not a babysitter. A copilot &mdash; second seat in a cockpit. You are still flying the plane. You are still making every real decision. But the copilot handles the instruments, monitors the systems, flags the things you would miss when you are focused on something else. You think. You decide. You build. HUMEROS handles the rest.</p>
+<p>That is HUMEROS. One sentence: <em>a personal intelligence system that protects your thinking from everything that is not thinking.</em></p>
+<hr>
+<h2>What HUMEROS Is Not</h2>
+<p>It is not Jarvis. Jarvis is fictional and Tony Stark had an unlimited budget, an MIT degree, and frankly an unrealistic number of suits. HUMEROS runs on free APIs, a PC you already own, and a phone you already carry. If you came here expecting a holographic interface and a British accent, I have bad news. If you came here expecting something that actually works and costs nothing to run, keep reading.</p>
+<p>It is not an app. You cannot download HUMEROS. It is a system you build and own &mdash; which means it does exactly what you designed it to do, not what some product manager at a startup decided users probably want.</p>
+<p>It is not finished. HUMEROS is a living system. There is no version 1.0 release party. There is no point where I will say done. This document describes the foundation. The building is ongoing, and that is intentional.</p>
+<hr>
+<h2>The Five Layers</h2>
+<p>Before any actual building, I want you to see the whole map first.</p>
+<p><strong>The Brain</strong> is the AI model that does the reasoning. It reads your messages, understands what you need, figures out what should happen. It does not remember anything on its own. That is the next layer&rsquo;s job.</p>
+<p><strong>The Memory</strong> is the database. Every decision you make through HUMEROS, every idea you capture, every goal you set &mdash; it lives here. This is also your second brain. The thing that makes switching AI models painless because your identity is stored in a file you own, not in someone else&rsquo;s chat history.</p>
+<p><strong>The Nervous System</strong> is the automation engine that connects everything to everything else. When your phone sends a signal, it receives it. When you tell HUMEROS to update your schedule, it executes that. Without this layer, the brain and the memory are just sitting there doing nothing.</p>
+<p><strong>The Senses</strong> are every device and input that feeds HUMEROS information about your real life. Your phone. Your PC. A fitness band when you get one. Smart glasses eventually. Right now your phone and PC are enough to start.</p>
+<p><strong>The Interface</strong> is how HUMEROS talks back. A Telegram bot. A voice reply. A dashboard. The interface is the only layer you ever actually see &mdash; everything else runs invisible underneath it.</p>
+<p>Five layers. Remove any one and the system stops making sense. Keep all five and you have what I had in mind on that Tuesday. Or Wednesday. It does not matter.</p>
+<hr>
+<h2>What You Need</h2>
+<p>Hardware: a PC that is on for a reasonable part of your day, and a phone. No rented servers. No cloud bills.</p>
+<p>Knowledge: you have opened Python before. You know what a variable is. You have felt the small specific satisfaction of running a script and seeing it do what you told it to do. That is enough. Everything else is in here.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Write your own one-paragraph mission statement for your version of HUMEROS. What is the problem it is solving for you specifically? Put it somewhere you will see it while you build.</p></div>`
+},{
+  num:"01",
+  color:"blue",
+  name:"The Blueprint",
+  sub:"Five layers. Full architecture.",
+  content:`<span class="ch-eyebrow">CHAPTER 1</span>
+<h1>The Blueprint</h1>
+<p>Before I write a single line of code for something complex, I draw the map. Not because I am organised &mdash; I am genuinely not &mdash; but because complex systems built without a map turn into complex problems without a solution. And I have been there enough times to learn that lesson.</p>
+<p>So here is the map.</p>
+<p>HUMEROS has five layers. I introduced them at the end of Chapter 0. Now I am going to make them real.</p>
+<hr>
+<h2>The Brain</h2>
+<p>The brain is the AI model that does the actual thinking. You send it a message, it understands what you mean, it figures out what should happen, it responds.</p>
+<p>There are two of them.</p>
+<p>The first brain is cloud-based. For HUMEROS I use Gemini Flash &mdash; Google&rsquo;s free API tier. It is fast, capable, and free for a reasonable volume of daily requests. The honest caveat is that anything you send to Gemini touches Google&rsquo;s servers. For most tasks that is fine. For anything personal &mdash; mood logs, health data, private plans &mdash; it is not.</p>
+<p>That is where the second brain comes in. A local model running on your own PC through a tool called Ollama. Nothing sent to it leaves your machine. It is slower and smaller than Gemini but it does not need to be powerful &mdash; it just needs to be trustworthy. The local brain handles the sensitive stuff. Gemini handles everything else.</p>
+<p>Why two brains instead of one? Because privacy and capability are currently in tension with each other in AI. The most capable models are cloud-based and therefore not fully private. The most private models are local and therefore limited. Running both and routing intelligently between them is how you stop choosing between the two.</p>
+<hr>
+<h2>The Memory</h2>
+<p>Here is something nobody tells you about AI models: they have the memory of a goldfish.</p>
+<p>Every conversation starts blank. The model does not remember you from yesterday. It does not know what you told it last week. It does not remember the goal you set three days ago or the decision you made this morning. Each session is a fresh start and you are always a stranger.</p>
+<p>This is the single biggest gap between &ldquo;I use ChatGPT sometimes&rdquo; and &ldquo;I have a system that knows me.&rdquo; The gap is memory.</p>
+<p>HUMEROS fills that gap with a database. Everything important gets stored &mdash; your goals, your decisions, your captured ideas, summaries of your days, your health data eventually. When you talk to HUMEROS, it does not start from scratch. It queries the database first, pulls what is relevant, and speaks to you with actual context.</p>
+<p>The specific tool is SQLite. It is the most underrated piece of software in the world. No installation. No server process running in the background. One file. Infinitely queryable.</p>
+<hr>
+<h2>The Nervous System</h2>
+<p>The brain can think. The memory can remember. But something needs to connect them to everything else and actually make things happen. That is the nervous system.</p>
+<p>In HUMEROS this is n8n &mdash; an open-source automation tool you self-host on your PC. If you have heard of Zapier or Make, n8n is the version you own. No monthly fee. No workflow limits. No data going anywhere you did not send it.</p>
+<p>n8n works through workflows. A workflow is a chain of events: something triggers it, then a series of actions happen in sequence. Your phone sends a signal &mdash; n8n receives it, asks Gemini what to do, writes the result to the database, sends you a message back. That is one workflow. HUMEROS runs several of them, quietly, in the background, every day.</p>
+<hr>
+<h2>The Senses</h2>
+<p>A system that only responds to what you manually tell it is just a fancy chatbot. HUMEROS is supposed to know things &mdash; about your day, your habits, your body &mdash; without you having to report everything by hand.</p>
+<p>That is what the senses are for. Every device that feeds HUMEROS information about your real life is a sense.</p>
+<p>Your Android phone is the most important one right now. It knows when you unlock it, what apps you open, where you are, what time it is. Through an app called Tasker, those signals can be turned into webhooks &mdash; small automatic messages sent to n8n whenever something happens.</p>
+<p>Everything else &mdash; a fitness band, smart glasses, a smart home device &mdash; plugs in the same way. One protocol called MCP handles how these devices talk to the brain. Any device that can send data, HUMEROS can listen to. The list grows as you grow.</p>
+<hr>
+<h2>The Interface</h2>
+<p>The interface is the only part of HUMEROS you see. Everything else is invisible infrastructure. So the interface has one job: do not get in the way.</p>
+<p>Right now the primary interface is a Telegram bot &mdash; it works on every device, it has a proper bot API, and it requires no custom app to build. OpenClaw, which we cover in Chapter 8, extends this to WhatsApp, Discord, Signal, and every other platform you already live on.</p>
+<hr>
+<h2>Why These Tools Specifically</h2>
+<p>Every choice has a reason and the reason is almost always one of three things: it is free, it is self-hosted, or it does the job better than what I looked at first.</p>
+<p>n8n is free to self-host forever. The cloud version costs money. We are not using the cloud version.</p>
+<p>Gemini Flash has a free tier generous enough for personal daily use. GPT-4 does not.</p>
+<p>Ollama is the cleanest way to run local models on a normal PC. It installs in one command, models download like apps, and it exposes a local API that n8n can call exactly like it calls Gemini.</p>
+<p>SQLite because there is genuinely no reason to run Postgres for a personal system with one user. SQLite is faster for small data, simpler to back up, and requires zero configuration.</p>
+<p>Tailscale is how every device in this system talks to every other device privately, without opening your router to the internet. It is free for personal use.</p>
+<hr>
+<h2>The Privacy Architecture</h2>
+<p>One design principle worth naming clearly before we build anything: HUMEROS should know as much as is useful and no more than that.</p>
+<p>The local model exists specifically so that the data most worth protecting &mdash; health signals, mood logs, identity information, anything you would not want on a server you do not own &mdash; never leaves the machine. The database is local. The automation runs locally. The only thing that touches an external server is the reasoning tasks sent to Gemini, and those are filtered before they leave.</p>
+<p>This is not paranoia. It is a reasonable decision made once, at the architecture level, so you never have to make it again at the individual feature level.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Sketch the five-layer architecture on paper without looking at this document. Brain, Memory, Nervous System, Senses, Interface. Draw an arrow showing how a morning briefing flows through all five layers. If you can draw it, you understand it.</p></div>`
+},{
+  num:"02",
+  color:"green",
+  name:"The Nervous System",
+  sub:"n8n. Automation. Your first workflow.",
+  content:`<span class="ch-eyebrow">CHAPTER 2</span>
+<h1>The Nervous System</h1>
+<p>Before we touch n8n, three concepts. These three words are going to appear everywhere in this chapter and the next five, and if you do not know what they mean you will feel lost in a way that is hard to debug.</p>
+<h2>Pit Stop &mdash; Three Words That Unlock Everything</h2>
+<h3>What an API is</h3>
+<p>API stands for Application Programming Interface, which is one of those phrases that explains nothing. So forget the phrase.</p>
+<p>An API is a menu. Imagine a restaurant. You do not walk into the kitchen and cook your own food. You look at a menu, you order something specific, and the kitchen prepares it and sends it to you. You never see what happens in the kitchen. You just get your food.</p>
+<p>An API is the menu for a piece of software. Gemini has an API &mdash; a list of things you are allowed to ask it. You send a request in the right format, the Gemini servers process it, and you get a response back. Every external service HUMEROS connects to has an API. n8n is the customer that orders from all of them so you do not have to.</p>
+<h3>What JSON is</h3>
+<p>JSON is a format for writing structured information so that software can read it without confusion. It looks like this:</p>
+<pre><code class="language-json">{
+  "name": "Umer",
+  "goal": "build HUMEROS",
+  "caffeinated": true
+}</code></pre>
+<p>Curly braces, keys in quotes, values after colons, commas between items. Humans can read it. Computers can read it. It is the universal language that services use to talk to each other.</p>
+<h3>What a webhook is</h3>
+<p>A webhook is a doorbell. A regular API call is you calling someone &mdash; you initiate it, you wait for a response. A webhook is the opposite. Someone else rings your doorbell and your code answers. In HUMEROS, almost everything starts with a webhook. Something happens. n8n wakes up. The nervous system moves.</p>
+<hr>
+<h2>What Automation Actually Is</h2>
+<p>People overcomplicate this concept. Automation is not AI. It is not magic. It is not complicated.</p>
+<p>Automation is: if X happens, do Y.</p>
+<p>That is the whole idea. Three examples from HUMEROS&rsquo;s actual daily loop: when the clock hits 7am, n8n triggers a morning briefing. When you send a message starting with &ldquo;idea:&rdquo;, the idea gets captured permanently. When your PC has had a browser open for forty minutes during a study block, you get a friendly nudge. None of those require you to be paying attention. That is automation.</p>
+<hr>
+<h2>Installing n8n</h2>
+<p>n8n runs inside Docker. With Docker Desktop running, open your terminal and type:</p>
+<pre><code class="language-bash">docker run -it --rm \
+  --name n8n \
+  -p 5678:5678 \
+  -v n8n_data:/home/node/.n8n \
+  docker.n8n.io/n8nio/n8n</code></pre>
+<p>What that does: downloads n8n, runs it inside a container, exposes it at port 5678, and stores your data so it survives restarts. When the terminal says &ldquo;n8n ready on port 5678&rdquo;, open your browser and go to <code>http://localhost:5678</code>.</p>
+<p>You will be asked to create an account. Create one. It is local &mdash; nothing is being sent anywhere. This is your n8n, running on your PC, owned by you.</p>
+<p>Verify the current command at <strong>docs.n8n.io</strong> as n8n versions update regularly.</p>
+<hr>
+<h2>Your First Workflow</h2>
+<p>Click &ldquo;New Workflow.&rdquo; Add a Webhook node as the trigger. Copy the webhook URL. Add a &ldquo;Respond to Webhook&rdquo; node. In the response body, type:</p>
+<pre><code class="language-json">{
+  "status": "HUMEROS online"
+}</code></pre>
+<p>Connect the two nodes. Click &ldquo;Execute workflow.&rdquo; Open a new browser tab and paste the webhook URL.</p>
+<p>Go back to n8n. Green checkmarks on both nodes. In the output panel: <code>{"status": "HUMEROS online"}</code></p>
+<p>That is the entire nervous system in its most minimal form. Everything HUMEROS does is a more complex version of exactly this.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>n8n is running at localhost:5678. Your first workflow fires when you hit the webhook URL and responds with &ldquo;HUMEROS online.&rdquo; The nervous system is alive.</p></div>`
+},{
+  num:"03",
+  color:"purple",
+  name:"The Brain",
+  sub:"LLMs. Two of them. MCP.",
+  content:`<span class="ch-eyebrow">CHAPTER 3</span>
+<h1>The Brain</h1>
+<p>Every impressive thing HUMEROS does eventually comes down to one moment: a piece of text goes in, and a useful response comes back. Everything else &mdash; the database, the automation, the device signals &mdash; is infrastructure that exists to make that moment happen with the right context, at the right time, for the right reason.</p>
+<p>That moment is the brain doing its job.</p>
+<hr>
+<h2>What an LLM Actually Is</h2>
+<p>LLM stands for Large Language Model. What it actually is: a very large mathematical function trained on an enormous amount of human-written text.</p>
+<p>During training, it read &mdash; in a loose sense of that word &mdash; a significant fraction of the text humanity has produced. It did not memorize them. It learned patterns. Specifically it learned: given a sequence of words, what word is likely to come next?</p>
+<p>That sounds underwhelming until you realize what happens when you scale it. When a model has seen enough human text, predicting the next word starts to look indistinguishable from reasoning.</p>
+<p>What it cannot do on its own: remember, act, connect to anything. It starts fresh every session. This is not a flaw to work around. It is the reason the rest of HUMEROS exists.</p>
+<hr>
+<h2>Two Brains</h2>
+<p>HUMEROS uses two models and routes between them based on one rule: does this involve personal data?</p>
+<p>If yes: local model. If no: cloud model.</p>
+<p><strong>Gemini Flash (cloud):</strong> powerful, fast, free within limits, but inputs touch Google&rsquo;s servers. Get your free API key at <strong>aistudio.google.com</strong>. No credit card required.</p>
+<p><strong>Ollama (local):</strong> private, runs on your PC, zero data leaves the room. Install it and pull a model:</p>
+<pre><code class="language-bash">curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2:3b
+ollama run llama3.2:3b "say hello"</code></pre>
+<p>Check current model options at <strong>ollama.com</strong> as the list updates regularly.</p>
+<hr>
+<h2>Connecting to n8n</h2>
+<p>Both brains talk to n8n through HTTP requests. For Gemini:</p>
+<pre><code class="language-bash">POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+
+{
+  "contents": [{"parts": [{"text": "Your prompt here"}]}]
+}</code></pre>
+<p>For Ollama, same pattern, different URL:</p>
+<pre><code class="language-bash">POST http://localhost:11434/api/generate
+
+{
+  "model": "llama3.2:3b",
+  "prompt": "Your prompt here",
+  "stream": false
+}</code></pre>
+<p>Verify current endpoint formats at <strong>ai.google.dev</strong> for Gemini and <strong>ollama.com/docs</strong> for Ollama.</p>
+<hr>
+<h2>MCP &mdash; The Universal Plug for AI</h2>
+<p>Here is a problem that existed for a long time before anyone solved it cleanly: AI models are good at reasoning but they live in a box. They cannot look at your calendar, check your database, or read a file on your PC without custom code for every connection.</p>
+<p>MCP &mdash; Model Context Protocol &mdash; is the clean solution. It is an open standard that defines one universal way for any AI model to connect to any external tool. Think of it as USB for AI tools. Before USB, every device had its own connector. After USB, one standard port connected everything.</p>
+<p>For HUMEROS: every new device or service gets one MCP server. The brain plugs into all of them through one protocol. You add a new sense by writing one MCP server. Nothing else changes.</p>
+<hr>
+<h2>Building Your First MCP Server</h2>
+<p>An MCP server has three parts: schema (what it can do), handler (how it does it), and transport (how it communicates). Here is a working template:</p>
+<pre><code class="language-python">from mcp.server import Server
+from mcp.server.stdio import stdio_server
+import asyncio
+
+app = Server("humeros-{tool-name}")
+
+@app.tool()
+async def your_tool_name(parameter: str) -> str:
+    """One sentence describing what this tool does."""
+    # Your handler code here
+    return "result as a string"
+
+if __name__ == "__main__":
+    asyncio.run(stdio_server(app))</code></pre>
+<p>Install with: <code>pip install mcp</code>. Check <strong>modelcontextprotocol.io</strong> for current documentation.</p>
+<p>Copy that template. Change the tool name. Write the handler. Plug it in. The brain learns a new capability. Repeat for every device you add in Chapter 6.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>n8n calls Gemini and gets a response. Ollama is running locally and answers a test prompt. The system can think with two independent brains. Try asking both the same question and compare the responses.</p></div>`
+},{
+  num:"04",
+  color:"amber",
+  name:"The Memory",
+  sub:"Database. Second brain. RAG.",
+  content:`<span class="ch-eyebrow">CHAPTER 4</span>
+<h1>The Memory</h1>
+<p>Let me tell you what happens when you talk to an AI with no memory system behind it.</p>
+<p>You explain who you are. You explain what you are working on. The conversation goes well. You close the tab. Tomorrow you open a new conversation and the model looks at you with the digital equivalent of a blank stare. It does not know you. It does not know yesterday. You are a stranger and it is very pleased to meet you for the first time.</p>
+<p>You explain everything again.</p>
+<p>The database is the solution. It is the thing that makes HUMEROS feel like yours.</p>
+<hr>
+<h2>SQLite &mdash; The Friendliest Database</h2>
+<p>A database is a filing cabinet. A structured, organized, searchable filing cabinet that lives in a file on your computer. You have been using databases your entire life without knowing it. Your phone&rsquo;s contacts app is a database. Your music library is a database.</p>
+<p>SQLite is a single file on your hard drive, no server process, no installation beyond the Python library. It is used in production by Airbus, Apple, Android, Firefox. Create it like this:</p>
+<pre><code class="language-python">import sqlite3
+conn = sqlite3.connect("humeros.db")</code></pre>
+<p>That one line creates a file called humeros.db. That file is your database. That file is the beginning of HUMEROS&rsquo;s memory.</p>
+<hr>
+<h2>The Core Schema</h2>
+<p>The schema is the blueprint of what your database contains. Run this once to set everything up (full schema in the Appendix):</p>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS identity (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    status TEXT DEFAULT 'active'
+);
+CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    summary TEXT NOT NULL,
+    happened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS ideas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    topic TEXT,
+    captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);</code></pre>
+<hr>
+<h2>RAG &mdash; Memory Without Breaking the Context Window</h2>
+<p>There is a problem with having a large database and an AI model with a limited context window. You cannot dump the entire database into every message.</p>
+<p>RAG &mdash; Retrieval Augmented Generation &mdash; is the solution. Before sending a message to the brain, search the database for the most relevant entries. Send only those. The brain reads them as context and responds with your actual history active.</p>
+<p>It works the same way your own memory works when someone asks you a question. You do not replay your entire life before answering. You retrieve what is relevant.</p>
+<p>The n8n pattern: message arrives &rarr; extract key terms &rarr; query database for matches &rarr; attach top results to system prompt &rarr; send to brain &rarr; return response.</p>
+<hr>
+<h2>The Idea Capture Workflow</h2>
+<p>Build this one first. It takes ten minutes and is immediately, obviously useful.</p>
+<p>In n8n: Telegram trigger (message contains &ldquo;idea:&rdquo;) &rarr; extract text after &ldquo;idea:&rdquo; &rarr; write to ideas table &rarr; confirm back: &ldquo;captured.&rdquo;</p>
+<p>From the moment this runs, you will never lose a thought again. You are in bed at 11pm, something hits you, you open Telegram, type &ldquo;idea: build a habit tracker that syncs with the health table,&rdquo; send it, and it is in the database before you put the phone down.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Send &ldquo;idea: my first captured idea&rdquo; to your Telegram bot. Query the database and see it there. HUMEROS now remembers something between sessions. The memory is alive.</p></div>`
+},{
+  num:"05",
+  color:"green",
+  name:"The Secret Tunnel",
+  sub:"Tailscale. Private networking.",
+  content:`<span class="ch-eyebrow">CHAPTER 5</span>
+<h1>The Secret Tunnel</h1>
+<p>Right now HUMEROS has a brain, a memory, and a nervous system. You can open n8n in a browser on your PC and build workflows that call Gemini and write to the database and everything works beautifully. On your PC. Only on your PC.</p>
+<p>Open Telegram on your phone and try to send a message to HUMEROS. Nothing happens. As far as every other device you own is concerned, n8n does not exist.</p>
+<p>This chapter fixes that.</p>
+<hr>
+<h2>Why Your Devices Cannot Find Each Other</h2>
+<p>Your home has one internet connection coming in through a router. That router has one public IP address. Inside your house, multiple devices each get their own private IP address. Those private addresses only make sense inside your house. The moment your phone is on mobile data, it cannot reach 192.168.1.105 because that address is meaningless outside your router.</p>
+<p>The obvious fix &mdash; port forwarding &mdash; opens your n8n to the entire internet. Every bot crawling for exposed services can knock on that door. For a system holding your personal database, that is not a door worth opening.</p>
+<p>Tailscale is the better answer.</p>
+<hr>
+<h2>What Tailscale Actually Is</h2>
+<p>Not a traditional VPN. Tailscale is a mesh network built on WireGuard encryption. Instead of routing your traffic through a central server, it connects your devices directly to each other, peer to peer, encrypted end to end. Tailscale&rsquo;s servers are only involved in the initial handshake. After that they step aside.</p>
+<p>The free Personal plan: unlimited devices, up to 6 users, forever free. More than HUMEROS will ever need.</p>
+<hr>
+<h2>Setting It Up</h2>
+<p>Go to <strong>tailscale.com</strong> and create a free account. Then:</p>
+<pre><code class="language-bash"># Linux
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+
+# Windows and Mac: GUI installers at tailscale.com/download</code></pre>
+<p>On Android: install Tailscale from the Play Store, sign in with the same account, tap connect.</p>
+<p>Every device now appears in your admin panel at <strong>login.tailscale.com</strong> with a stable IP in the 100.x.x.x range. These addresses never change. Check <strong>tailscale.com/download</strong> for current installation steps.</p>
+<hr>
+<h2>MagicDNS</h2>
+<p>Remembering that your PC is at 100.64.23.17 is not much better than remembering a random address. Enable MagicDNS in your Tailscale admin panel under DNS settings. One toggle.</p>
+<p>Now reach n8n from any device in your tailnet:</p>
+<pre><code>http://humeros-pc:5678</code></pre>
+<p>That URL works from your phone. From your tablet. From anywhere in the world. Because it is inside the tailnet, no one else can see it.</p>
+<hr>
+<h2>The Test</h2>
+<p>Pick up your phone. Switch to mobile data so you know you are not cheating. Open a browser and go to <code>http://humeros-pc:5678</code>.</p>
+<p>If the n8n login page loads, the tunnel is working. Your phone, on a completely different network, reached your PC through an encrypted tunnel and n8n answered.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Phone on mobile data successfully reaches n8n on your PC at humeros-pc:5678. Every device you own is now on one private network. The tunnel is open.</p></div>`
+},{
+  num:"06",
+  color:"purple",
+  name:"The Senses",
+  sub:"Every device. MCP. BCI slot.",
+  content:`<span class="ch-eyebrow">CHAPTER 6</span>
+<h1>The Senses</h1>
+<p>Everything we have built so far is reactive. HUMEROS waits. You say something. It responds.</p>
+<p>HUMEROS is supposed to know things without you telling it. It is supposed to notice when you have been staring at a browser for an hour when you were supposed to be studying. It is supposed to know your sleep was bad before you mention it.</p>
+<p>That requires senses. Inputs from the real world that flow into the system without you manually initiating them.</p>
+<hr>
+<h2>The Design Philosophy</h2>
+<p>Before connecting a single device, one principle worth writing down and keeping visible:</p>
+<p><em>Monitor only what creates value. Not everything. Not nothing.</em></p>
+<p>Every signal added to HUMEROS should pass a simple test: does knowing this help you make better decisions or take better actions? If yes, add it. If not, leave it out.</p>
+<hr>
+<h2>The Android Phone</h2>
+<p>The tool that turns phone patterns into signals is Tasker. It is an Android automation app that lets you fire webhooks based on conditions you define. Install it from the Play Store.</p>
+<p>A basic signal from Tasker to n8n:</p>
+<pre><code class="language-json">{
+  "event": "phone_unlocked",
+  "timestamp": "%TIMES",
+  "device": "phone"
+}</code></pre>
+<p>Five signals worth capturing: phone unlocked (activity pattern), specific app opened (mode detection), location changed to named place, phone charging started (sleep time), screen off for 30+ minutes during awake hours.</p>
+<hr>
+<h2>The PC Monitor</h2>
+<p>A small Python script in the background checks the active window every 5 minutes and reports meaningful changes:</p>
+<pre><code class="language-python">import time, requests
+from datetime import datetime
+
+N8N_WEBHOOK = "http://humeros-pc:5678/webhook/pc-signal"
+last_window = ""
+
+def get_active_window():
+    try:
+        import win32gui
+        return win32gui.GetWindowText(win32gui.GetForegroundWindow())
+    except: return "unknown"
+
+while True:
+    current = get_active_window()
+    if current != last_window and current:
+        requests.post(N8N_WEBHOOK, json={
+            "event": "window_changed",
+            "detail": current,
+            "timestamp": datetime.now().isoformat()
+        }, timeout=3)
+        last_window = current
+    time.sleep(300)</code></pre>
+<hr>
+<h2>MCP &mdash; The Universal Protocol</h2>
+<p>Without a standard, connecting each new device to HUMEROS means writing custom integration code for every pair. When you swap AI models, you rewrite everything.</p>
+<p>MCP is the one language everything speaks. You write an MCP server once for each data source. Any AI model that supports MCP can talk to any MCP server. The brain does not need to know anything about the data source. The data source does not need to know anything about the brain.</p>
+<p>Every device in the rest of this chapter gets one MCP server. The template from Chapter 3 handles all of them.</p>
+<hr>
+<h2>Fitness Band (Huawei Band 9)</h2>
+<p>Core goal: HUMEROS knows your body state &mdash; sleep quality, heart rate, recovery score.</p>
+<p>The bridge: Huawei Health &rarr; Health Connect (Android) &rarr; n8n via a health MCP server. In Huawei Health, enable Health Connect sync. Grant permissions for sleep, heart rate, and steps.</p>
+<p>The morning briefing then knows if last night&rsquo;s sleep was 5 hours, not 8, and adjusts its recommendations accordingly.</p>
+<p>For other bands: the Health Connect bridge works for most Android-compatible devices. Same pipeline, different source app.</p>
+<hr>
+<h2>Smart Glasses (Meta Ray-Ban)</h2>
+<p>Core goal: HUMEROS gets ears in the real world. You say something out loud while walking and it gets captured.</p>
+<p>Current pipeline: glasses microphone &rarr; audio file &rarr; Whisper transcription (local) &rarr; n8n &rarr; intent parsing &rarr; action.</p>
+<p>Whisper setup:</p>
+<pre><code class="language-bash">pip install openai-whisper
+whisper audio_note.mp3 --model small --language English</code></pre>
+<p>For other glasses: any wearable with audio output and any accessible API follows the same pattern. The core goal is always audio capture into n8n.</p>
+<hr>
+<h2>Brain Computer Interface &mdash; The Slot That Waits</h2>
+<p>A BCI reads electrical signals from your brain and translates them into digital input. Not your thoughts. Not sentences. What consumer BCIs can detect reliably today: focus versus relaxed, stress levels, drowsiness.</p>
+<p>The non-invasive options worth knowing: OpenBCI (open source headset, Python SDK), Emotiv (consumer friendly, subscription software).</p>
+<p>The HUMEROS slot for this:</p>
+<pre><code class="language-python">@app.tool()
+async def get_mental_state() -> str:
+    """Returns current detected mental state from BCI device."""
+    # Connect to OpenBCI or Emotiv SDK
+    # Classify: focused / relaxed / stressed / drowsy
+    return "current_state: focused, confidence: 0.78"</code></pre>
+<p>When that works reliably, HUMEROS knows you are stressed before you mention it and adjusts your day automatically. The architecture slot is open. Plug in the hardware when it catches up.</p>
+<hr>
+<h2>The Privacy Line</h2>
+<p>What HUMEROS knows: phone unlock frequency, app category in use, general location by named place, sleep duration, step count, active window on PC at coarse level.</p>
+<p>What HUMEROS never knows: keystrokes, screen recordings, message content, GPS coordinates, continuous audio, eye movements.</p>
+<p>All health and mental state data runs through the local Ollama model. It never reaches Gemini. The database is local. Your secrets stay yours.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Unlocking your phone triggers an n8n workflow. The execution log shows the signal arrived. HUMEROS noticed something that happened in the physical world without you typing anything.</p></div>`
+},{
+  num:"07",
+  color:"amber",
+  name:"The Daily Loop",
+  sub:"Morning to night. Automated.",
+  content:`<span class="ch-eyebrow">CHAPTER 7</span>
+<h1>The Daily Loop</h1>
+<p>Every chapter until now has been construction. This chapter is where the parts stop being parts and start being a day.</p>
+<p>The Daily Loop is six workflows. By the end of this chapter every one of them is running.</p>
+<hr>
+<h2>Morning Briefing</h2>
+<p>You wake up. Before you make a single decision about the day, HUMEROS has already looked at your schedule, your current sprint goal, last night&rsquo;s sleep data, and anything logged in yesterday&rsquo;s evening review. It has assembled all of that into a short briefing and sent it to your Telegram before your eyes are fully open.</p>
+<p>The n8n workflow: cron trigger (7am) &rarr; database query (active goal, recent events, sleep score) &rarr; Gemini call with this prompt:</p>
+<pre><code>You are HUMEROS, a personal intelligence system for {name}.
+Write a morning briefing. Tone: direct, warm, one human talking to another.
+No bullet points. Two short paragraphs maximum.
+First paragraph: what the day holds based on the context.
+Second paragraph: one specific thing worth keeping in mind today.
+Do not be generic. Reference the actual data you have been given.
+
+Context:
+Active goal: {goal}
+Recent events: {events}
+Sleep last night: {sleep_data}</code></pre>
+<p>Then a Telegram node delivers the response. You never touch n8n. You just wake up and your phone already knows what kind of day it is.</p>
+<hr>
+<h2>Focus Mode and Distraction Detection</h2>
+<p>When you tell HUMEROS you are entering a focus block, it sets a flag in the database and starts a background monitoring sub-workflow. Every fifteen minutes it checks: has the PC shown distraction signals? Has the phone been unlocked more than five times?</p>
+<p>If both are true, it sends one message: <em>&ldquo;Hey. Just checking in. You have had the browser open for a while and picked up your phone a few times. Still on track?&rdquo;</em></p>
+<p>That is it. One question. No lecture. You reply yes and it resets. You reply no and it asks if you want to end the focus block. Either answer is fine. HUMEROS is not your manager.</p>
+<p>The override: &ldquo;I know, I am intentionally taking a break&rdquo; silences the monitoring for the rest of the session. The thresholds for what counts as distraction are set by you and adjustable anytime.</p>
+<hr>
+<h2>Knowledge Digest</h2>
+<p>Every evening, HUMEROS scans your RSS feeds and YouTube channel subscriptions, filters to what is relevant to your current learning focus, summarizes each item to three lines, and delivers a digest to Telegram.</p>
+<p>For each item, Gemini gets this prompt:</p>
+<pre><code>Their current focus is: {active_goal}
+Their learning topics are: {topics}
+
+Title: {title}
+Description: {description}
+
+In three lines: is this relevant? If yes, core insight. Read in full or is summary enough?
+If not relevant, return only: "skip"</code></pre>
+<p>The non-skipped items get assembled into one Telegram message. Five minutes of reading instead of an hour. Nothing important missed.</p>
+<hr>
+<h2>Idea Capture</h2>
+<p>Already built in Chapter 4. Every Sunday morning HUMEROS sends all ideas from the past seven days back to you. Most you will have forgotten. Some will be irrelevant. One or two will be the thing you actually want to build next.</p>
+<hr>
+<h2>Evening Review</h2>
+<p>At the end of the day, n8n queries everything that happened: phone signals, PC activity, events logged, focus blocks. It sends all of that to Gemini:</p>
+<pre><code>You are writing a brief end-of-day summary for {name}.
+Tone: honest, not harsh. Like a journal entry written by someone who knows them well.
+Two paragraphs maximum.
+First paragraph: what the day looked like based on the data.
+Second paragraph: one observation worth carrying into tomorrow.
+
+Data from today: {assembled_day_data}</code></pre>
+<p>The response is stored in the events table and sent to Telegram. Then HUMEROS sends one more message: <em>&ldquo;One thing for tomorrow? (Optional, reply anytime before midnight)&rdquo;</em></p>
+<p>If you reply, it is stored as tomorrow&rsquo;s priority and shows up in the morning briefing. If you do not reply, HUMEROS uses the active goal as the default. Either way, tomorrow starts with context.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>A morning briefing arrives automatically at 7am without you doing anything. It references your actual goal and mentions something from yesterday. For the first time, HUMEROS ran without being asked.</p></div>`
+},{
+  num:"08",
+  color:"blue",
+  name:"You Can Talk to It Now",
+  sub:"Interface. Voice. OpenClaw.",
+  content:`<span class="ch-eyebrow">CHAPTER 8</span>
+<h1>You Can Talk to It Now</h1>
+<p>Everything we built exists to serve this moment. The brain is thinking, the memory is storing, the senses are listening, the daily loop is running. Now you need a way to actually talk to it.</p>
+<p>The interface is the one layer of HUMEROS that exists at the surface. Everything else is infrastructure. The interface is the relationship.</p>
+<hr>
+<h2>Telegram Bot &mdash; The Starting Point</h2>
+<p>Open Telegram and search for BotFather. Send it <code>/newbot</code>. Give it a name and a username ending in &ldquo;bot.&rdquo; BotFather sends you an API token. Store it in n8n&rsquo;s credentials manager.</p>
+<p>In n8n, create a Telegram trigger node with that token. Send your bot a message. Check the n8n execution log. The message is there, with your chat ID, the text you sent, and a timestamp. HUMEROS can now hear you.</p>
+<p>The basic response loop:</p>
+<pre><code>Telegram trigger
+  &rarr; extract message text and chat ID
+  &rarr; query database for context (RAG)
+  &rarr; build system prompt with context
+  &rarr; send to Gemini
+  &rarr; send Gemini response back to Telegram</code></pre>
+<p>Useful slash commands to set up via BotFather:</p>
+<pre><code>/brief   &mdash; get today&rsquo;s morning briefing on demand
+/idea    &mdash; capture an idea
+/status  &mdash; current sprint goal and active focus block
+/focus   &mdash; start a focus block
+/digest  &mdash; get today&rsquo;s knowledge digest</code></pre>
+<hr>
+<h2>Natural Language</h2>
+<p>Before every message reaches Gemini, a lightweight classification step decides what kind of request it is:</p>
+<pre><code>Classify this message into one of these categories:
+idea_capture, knowledge_query, status_request,
+schedule_change, focus_control, general_conversation,
+database_query, unknown.
+
+Message: "{user_message}"
+Return only the category name. Nothing else.</code></pre>
+<p>One word response. n8n routes based on it. An idea goes to the idea workflow. A database query goes to RAG. General conversation goes straight to Gemini with full context. This costs almost nothing in API terms and means different types of requests are handled by the right tool.</p>
+<hr>
+<h2>OpenClaw</h2>
+<p>The Telegram bot works on Telegram. If you want HUMEROS reachable on WhatsApp, Discord, Signal, Slack, and every other platform at once, OpenClaw handles that for you.</p>
+<p>OpenClaw is an open source self-hosted tool that connects an AI agent to every messaging platform through one session. You configure your channels once. OpenClaw handles the platform-specific translation. Your HUMEROS logic in n8n stays the same regardless of which platform the message came from.</p>
+<pre><code class="language-bash">npm install -g openclaw
+openclaw onboard
+openclaw gateway start</code></pre>
+<p>The onboard command walks through connecting your AI provider (Gemini or Ollama) and your messaging channels. After that the gateway runs as a background process.</p>
+<p>It also introduces skills &mdash; modular plugins that give the agent specific capabilities. The pattern is identical to MCP servers. Your Chapter 3 MCP servers come with you to OpenClaw without modification.</p>
+<p>Build the Telegram bot first. When you find yourself wishing you could reach HUMEROS from another platform, that is the moment to look at OpenClaw. Migration is easy because the underlying n8n logic does not change.</p>
+<p>Check <strong>openclaw.ai</strong> for current setup documentation.</p>
+<hr>
+<h2>Voice Interface</h2>
+<p>Telegram supports voice messages natively. When you record and send one, n8n receives a file URL. The pipeline:</p>
+<pre><code class="language-python">import whisper, sys
+
+model = whisper.load_model("small")
+result = model.transcribe(sys.argv[1])
+print(result["text"])</code></pre>
+<p>The transcription feeds into the same response workflow as a typed message. Install with: <code>pip install openai-whisper</code></p>
+<p>For HUMEROS to speak back, edge-tts is the cleanest free option:</p>
+<pre><code class="language-bash">pip install edge-tts
+edge-tts --voice "en-US-GuyNeural" --text "Focus block starting now" --write-media reply.mp3</code></pre>
+<p>n8n sends the audio file to Telegram. You hear the answer without looking at anything.</p>
+<hr>
+<h2>Context-Aware Responses</h2>
+<p>Within a single Telegram conversation, HUMEROS should remember what was said earlier in that session. Maintain a conversation array, append each exchange, and include the last several messages in every API call:</p>
+<pre><code class="language-json">{
+  "messages": [
+    {"role": "user", "content": "What should I focus on today?"},
+    {"role": "assistant", "content": "Based on your current sprint..."},
+    {"role": "user", "content": "Okay and what about tomorrow?"}
+  ]
+}</code></pre>
+<p>With that history attached, &ldquo;what about tomorrow?&rdquo; is a follow-up, not a standalone question. This one addition makes HUMEROS feel dramatically more natural to talk to.</p>
+<div class="milestone"><div class="milestone-label">MILESTONE</div><p>Send &ldquo;what is my current goal?&rdquo; to your Telegram bot. HUMEROS queries the database, finds your active goal, and responds with it. Then say &ldquo;add an idea about that&rdquo; &mdash; it understands &ldquo;that&rdquo; refers to the goal from the previous message.</p></div>`
+},{
+  num:"09",
+  color:"green",
+  name:"The Upgrade Bay",
+  sub:"What comes next. The honest closing.",
+  content:`<span class="ch-eyebrow">CHAPTER 9</span>
+<h1>The Upgrade Bay</h1>
+<p>Somewhere around Chapter 4 or 5, something quietly shifts.</p>
+<p>You stop thinking about HUMEROS as a project you are building and start thinking about it as a thing that exists. A thing with opinions about your day, a thing that noticed you went to sleep late, a thing you sent an idea to at 11pm and which confirmed receipt before you put your phone down.</p>
+<p>That shift is the signal that the foundation works.</p>
+<p>Now comes the part nobody talks about in build guides: what you do with a working system over time.</p>
+<hr>
+<h2>The Upgrade Philosophy</h2>
+<p>HUMEROS does not finish. That is not a flaw in the design. It is the design.</p>
+<p>Three rules worth keeping visible:</p>
+<p>One feature per sprint cycle. Not ten features in one excited Sunday afternoon. One feature, scoped, built, tested, before the next begins. The graveyard of abandoned personal projects is mostly filled with things that got ten new features added in one weekend and then never opened again.</p>
+<p>Every new feature follows the same four-step pattern: sense, route, process, respond. If a proposed feature cannot be described in those four steps, it needs to be broken into smaller pieces first.</p>
+<p>Test in your actual life before adding the next one. Not in the n8n execution log. In your real day. Does the distraction nudge timing feel right after three weeks of use? The system is only as good as what it actually does to your actual days.</p>
+<hr>
+<h2>The MCP Expansion Pattern</h2>
+<p>Every future device follows the same blueprint: build one MCP server, plug it in, nothing else changes.</p>
+<p>Future MCP servers worth building as HUMEROS matures: a calendar server that reads and writes your schedule directly. An email summary server that surfaces anything that needs attention without reading message content. A reading list server that tracks articles you save. A code activity server that tells HUMEROS which projects you have actually touched recently.</p>
+<hr>
+<h2>The Roadmap</h2>
+<p><strong>Near term:</strong> Voice interface fully integrated into the daily loop. Web dashboard beyond the minimal HTML page. Health data pipeline tested and filling the table reliably. Smart home integration.</p>
+<p><strong>Medium term:</strong> Reading habit tracker. Project portfolio integration with GitHub activity. Multi-device context where HUMEROS understands the combination of signals, not just individual ones.</p>
+<p><strong>Far term:</strong> Smart glasses with a real-time audio and vision pipeline. BCI emotional state input when consumer hardware catches up. Multi-agent HUMEROS &mdash; specialized sub-agents for study, health, and creative work, coordinated by a central routing layer.</p>
+<hr>
+<h2>Open Sourcing Your HUMEROS</h2>
+<p>Share: n8n workflow JSON files (sanitized), database schema, MCP server templates, system prompt structure, Python scripts.</p>
+<p>Never share: API keys, your actual database file, your personal system prompt with your identity in it, logs from your actual use.</p>
+<p>Suggested repository structure:</p>
+<pre><code>humeros/
+├── README.md
+├── schema/
+│   └── humeros.sql
+├── workflows/
+│   ├── morning_briefing.json
+│   ├── idea_capture.json
+│   └── evening_review.json
+├── mcp_servers/
+│   ├── schedule_server.py
+│   └── template.py
+├── scripts/
+│   └── pc_monitor.py
+└── prompts/
+    └── system_prompt_template.txt</code></pre>
+<hr>
+<h2>The Honest Closing</h2>
+<p>There is a version of this chapter that ends with something motivational. A paragraph about how you have everything you need now, how the system is going to change everything. That paragraph would be dishonest and you would feel it.</p>
+<p>So here is the actual closing.</p>
+<p>HUMEROS will break. Something in n8n will behave unexpectedly after an update. The Gemini API will change a response format and a workflow will fail silently for a day before you notice. Tasker will stop firing a profile because Android decided to optimize battery.</p>
+<p>This is not failure. This is what maintaining a system feels like. Every time something breaks and you debug it and find the thing that went wrong, you understand HUMEROS more deeply than you did before it broke. That understanding is the real product of building this.</p>
+<p>The second honest thing: HUMEROS is only as good as the honesty you put into it. If you log a focus block as complete when it was not, the evening review will be wrong. Use it honestly. Let it see the bad days as clearly as the good ones.</p>
+<p>The last honest thing:</p>
+<p>You did not build Jarvis. Jarvis is fictional and Tony Stark has things you do not. You built something real, which means it is imperfect and incomplete and occasionally broken and entirely yours. That combination &mdash; imperfect and yours &mdash; is worth more than perfect and borrowed.</p>
+<p>HUMEROS does not make you the person you want to be. It makes it structurally easier to be that person.</p>
+<p>The foundation is built. The senses are connected. The brain is thinking, the memory is storing, the daily loop is running, and the interface is listening.</p>
+<p>What happens next is up to you.</p>
+<p><strong>Build well.</strong></p>`
+},{
+  num:"APX",
+  color:"amber",
+  name:"Appendix",
+  sub:"The Toolbox.",
+  content:`<span class="ch-eyebrow">APPENDIX</span>
+<h1>The Toolbox</h1>
+<p>The chapters are done. What follows is reference material. You will not read this the way you read the chapters. Come back to specific sections when you need them.</p>
+<hr>
+<h2>A.1 &mdash; The Free Stack</h2>
+<table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;margin-bottom:1.5rem">
+<tr style="border-bottom:0.5px solid var(--border)"><th style="text-align:left;padding:8px 12px;color:var(--text3);font-weight:500">Tool</th><th style="text-align:left;padding:8px 12px;color:var(--text3);font-weight:500">Role</th><th style="text-align:left;padding:8px 12px;color:var(--text3);font-weight:500">Free Tier</th></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">n8n</td><td style="padding:8px 12px;color:var(--text2)">Automation engine</td><td style="padding:8px 12px;color:var(--text2)">Unlimited workflows, self-hosted</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Gemini Flash</td><td style="padding:8px 12px;color:var(--text2)">Cloud brain</td><td style="padding:8px 12px;color:var(--text2)">1,500 req/day, no card needed</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Ollama</td><td style="padding:8px 12px;color:var(--text2)">Local brain</td><td style="padding:8px 12px;color:var(--text2)">Unlimited, fully private</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">SQLite</td><td style="padding:8px 12px;color:var(--text2)">Memory database</td><td style="padding:8px 12px;color:var(--text2)">Unlimited, single file</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Tailscale</td><td style="padding:8px 12px;color:var(--text2)">Private network</td><td style="padding:8px 12px;color:var(--text2)">Unlimited devices, 6 users</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Tasker</td><td style="padding:8px 12px;color:var(--text2)">Android automation</td><td style="padding:8px 12px;color:var(--text2)">One-time purchase, no subscription</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Telegram</td><td style="padding:8px 12px;color:var(--text2)">Interface and bot</td><td style="padding:8px 12px;color:var(--text2)">Free bot API, multi-platform</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">Whisper</td><td style="padding:8px 12px;color:var(--text2)">Voice transcription</td><td style="padding:8px 12px;color:var(--text2)">Local, unlimited, private</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">edge-tts</td><td style="padding:8px 12px;color:var(--text2)">Text to speech</td><td style="padding:8px 12px;color:var(--text2)">Free, many voices</td></tr>
+<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:8px 12px;color:var(--accent)">OpenClaw</td><td style="padding:8px 12px;color:var(--text2)">Multi-platform interface</td><td style="padding:8px 12px;color:var(--text2)">Free and open source, MIT</td></tr>
+<tr><td style="padding:8px 12px;color:var(--accent)">Home Assistant</td><td style="padding:8px 12px;color:var(--text2)">Smart home bridge</td><td style="padding:8px 12px;color:var(--text2)">Free, self-hosted</td></tr>
+</table>
+<hr>
+<h2>A.2 &mdash; n8n Workflow Templates</h2>
+<p>Import these into n8n via Settings &rarr; Import Workflow. Replace every database path, Telegram chat ID, and API key with your actual values.</p>
+<h3>Morning Briefing Workflow</h3>
+<pre><code class="language-json">
+{
+  "name": "HUMEROS Morning Briefing",
+  "nodes": [
+    { "name": "Schedule Trigger", "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": { "rule": { "interval": [{"field":"hours","hoursInterval":24}], "triggerAtHour": 7 } },
+      "position": [240, 300] },
+    { "name": "Query Context", "type": "n8n-nodes-base.executeCommand",
+      "parameters": { "command": "python3 /path/to/scripts/query_context.py" },
+      "position": [460, 300] },
+    { "name": "Call Gemini", "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "sendBody": true,
+        "body": { "contents": [{"parts":[{"text":"Morning briefing for {name}. Goal: {{$json.goal}}. Two warm paragraphs."}]}] }
+      }, "position": [680, 300] },
+    { "name": "Send to Telegram", "type": "n8n-nodes-base.telegram",
+      "parameters": { "operation": "sendMessage", "chatId": "YOUR_CHAT_ID",
+        "text": "={{$json.candidates[0].content.parts[0].text}}" },
+      "position": [900, 300] }
+  ],
+  "connections": {
+    "Schedule Trigger": {"main":[[{"node":"Query Context"}]]},
+    "Query Context":    {"main":[[{"node":"Call Gemini"}]]},
+    "Call Gemini":      {"main":[[{"node":"Send to Telegram"}]]}
+  }
+}
+</code></pre>
+<h3>Idea Capture Workflow</h3>
+<pre><code class="language-json">
+{
+  "name": "HUMEROS Idea Capture",
+  "nodes": [
+    { "name": "Telegram Trigger", "type": "n8n-nodes-base.telegramTrigger",
+      "parameters": {"updates": ["message"]}, "position": [240, 300] },
+    { "name": "Is Idea?", "type": "n8n-nodes-base.if",
+      "parameters": { "conditions": { "string": [{"value1":"={{$json.message.text}}","operation":"startsWith","value2":"idea:"}] } },
+      "position": [460, 300] },
+    { "name": "Store Idea", "type": "n8n-nodes-base.executeCommand",
+      "parameters": { "command": "python3 /path/to/store_idea.py" },
+      "position": [680, 220] },
+    { "name": "Confirm", "type": "n8n-nodes-base.telegram",
+      "parameters": { "operation": "sendMessage", "chatId": "={{$json.message.chat.id}}", "text": "captured." },
+      "position": [900, 220] }
+  ],
+  "connections": {
+    "Telegram Trigger": {"main":[[{"node":"Is Idea?"}]]},
+    "Is Idea?":         {"main":[[{"node":"Store Idea"}],[]]},
+    "Store Idea":       {"main":[[{"node":"Confirm"}]]}
+  }
+}
+</code></pre>
+<h3>Evening Review Workflow</h3>
+<pre><code class="language-json">
+{
+  "name": "HUMEROS Evening Review",
+  "nodes": [
+    { "name": "Schedule Trigger", "type": "n8n-nodes-base.scheduleTrigger",
+      "parameters": { "rule": { "interval": [{"field":"hours","hoursInterval":24}], "triggerAtHour": 21 } },
+      "position": [240, 300] },
+    { "name": "Query Today", "type": "n8n-nodes-base.executeCommand",
+      "parameters": { "command": "python3 /path/to/query_today.py" },
+      "position": [460, 300] },
+    { "name": "Call Gemini", "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "body": { "contents": [{"parts":[{"text":"Two-paragraph day summary for {name} based on: {{$json.stdout}}"}]}] }
+      }, "position": [680, 300] },
+    { "name": "Send Review", "type": "n8n-nodes-base.telegram",
+      "parameters": { "operation": "sendMessage", "chatId": "YOUR_CHAT_ID",
+        "text": "={{$json.candidates[0].content.parts[0].text}}\n\nOne thing for tomorrow?" },
+      "position": [900, 300] }
+  ],
+  "connections": {
+    "Schedule Trigger": {"main":[[{"node":"Query Today"}]]},
+    "Query Today":      {"main":[[{"node":"Call Gemini"}]]},
+    "Call Gemini":      {"main":[[{"node":"Send Review"}]]}
+  }
+}
+</code></pre>
+<hr>
+<h2>A.3 &mdash; Python Scripts</h2>
+<h3>PC Activity Monitor</h3>
+<pre><code class="language-python">
+# pc_monitor.py
+# Runs in the background. Reports active window changes every 5 min.
+# Windows: pip install pywin32 requests
+# Linux:   pip install requests  and  sudo apt install xdotool
+
+import time, requests
+from datetime import datetime
+
+N8N_WEBHOOK = "http://humeros-pc:5678/webhook/pc-signal"
+
+def get_active_window():
+    try:
+        import win32gui
+        return win32gui.GetWindowText(win32gui.GetForegroundWindow())
+    except ImportError:
+        import subprocess
+        r = subprocess.run(["xdotool","getactivewindow","getwindowname"],
+                          capture_output=True, text=True)
+        return r.stdout.strip()
+    except Exception:
+        return "unknown"
+
+def send_signal(event_type, detail):
+    try:
+        requests.post(N8N_WEBHOOK, json={
+            "event": event_type, "detail": detail,
+            "timestamp": datetime.now().isoformat(), "device": "pc"
+        }, timeout=3)
+    except Exception:
+        pass
+
+last_window = ""
+while True:
+    current = get_active_window()
+    if current != last_window and current:
+        send_signal("window_changed", current)
+        last_window = current
+    time.sleep(300)
+</code></pre>
+<h3>Whisper Voice Wrapper</h3>
+<pre><code class="language-python">
+# whisper_wrapper.py
+# Called by n8n after receiving a Telegram voice message.
+# Install: pip install openai-whisper
+# Docs:    github.com/openai/whisper
+
+import whisper, sys, os
+
+def transcribe(path):
+    if not os.path.exists(path):
+        print("error: file not found"); sys.exit(1)
+    model = whisper.load_model("small")
+    return model.transcribe(path)["text"].strip()
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("usage: python whisper_wrapper.py <audio_file>"); sys.exit(1)
+    print(transcribe(sys.argv[1]))
+</code></pre>
+<h3>Database Context Query</h3>
+<pre><code class="language-python">
+# query_context.py
+# Outputs JSON with goal, recent events, and sleep for LLM calls.
+
+import sqlite3, json
+from datetime import datetime, timedelta
+
+DB_PATH = "/path/to/humeros.db"
+
+def get_context():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT value FROM identity WHERE key='active_goal'")
+    row = c.fetchone()
+    goal = row[0] if row else "No active goal set"
+    cutoff = (datetime.now() - timedelta(days=1)).isoformat()
+    events = [r[0] for r in c.execute(
+        "SELECT summary FROM events WHERE happened_at > ? "
+        "ORDER BY happened_at DESC LIMIT 3", (cutoff,)).fetchall()]
+    sr = c.execute(
+        "SELECT value,unit FROM health WHERE metric='sleep_hours' "
+        "ORDER BY recorded_at DESC LIMIT 1").fetchone()
+    sleep = f"{sr[0]} {sr[1]}" if sr else "no data"
+    conn.close()
+    print(json.dumps({
+        "goal": goal, "recent_events": events,
+        "sleep": sleep, "date": datetime.now().strftime("%A, %B %d")
+    }))
+
+get_context()
+</code></pre>
+<h3>Weekly Ideas Digest</h3>
+<pre><code class="language-python">
+# weekly_ideas.py
+# Called by a Sunday cron workflow. Outputs past 7 days of ideas as JSON.
+
+import sqlite3, json
+from datetime import datetime, timedelta
+
+DB_PATH = "/path/to/humeros.db"
+
+def get_weekly_ideas():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    week_ago = (datetime.now() - timedelta(days=7)).isoformat()
+    rows = c.execute(
+        "SELECT content, topic, captured_at FROM ideas "
+        "WHERE captured_at > ? ORDER BY captured_at ASC", (week_ago,)
+    ).fetchall()
+    conn.close()
+    print(json.dumps([
+        {"content": r[0], "topic": r[1] or "untagged", "date": r[2][:10]}
+        for r in rows
+    ]))
+
+get_weekly_ideas()
+</code></pre>
+<h3>MCP Server Template</h3>
+<pre><code class="language-python">
+# mcp_template.py
+# Copy for every new device or data source added to HUMEROS.
+# Change server name, tool name, description, and handler only.
+# Install: pip install mcp
+# Docs:    modelcontextprotocol.io
+
+from mcp.server import Server
+from mcp.server.stdio import stdio_server
+import asyncio
+
+app = Server("humeros-your-tool-name")
+
+@app.tool()
+async def your_tool_name(parameter: str) -> str:
+    # Describe what this tool does in a comment, not a docstring, to avoid
+    # triple-quote issues. Replace with your actual handler logic.
+    result = f"Processed: {parameter}"
+    return result
+
+if __name__ == "__main__":
+    asyncio.run(stdio_server(app))
+</code></pre>
+<hr>
+<h2>A.4 &mdash; Database Schema</h2>
+<p>Copy this into <code>setup.sql</code> and run: <code>sqlite3 humeros.db &lt; setup.sql</code></p>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS identity (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT DEFAULT 'active'
+        CHECK(status IN ('active','completed','paused','abandoned')),
+    priority INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    summary TEXT NOT NULL,
+    category TEXT DEFAULT 'general',
+    source TEXT DEFAULT 'manual',
+    happened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS ideas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    topic TEXT,
+    status TEXT DEFAULT 'captured',
+    captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS knowledge (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    summary TEXT NOT NULL,
+    source TEXT,
+    topic TEXT,
+    learned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS health (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    metric TEXT NOT NULL,
+    value REAL NOT NULL,
+    unit TEXT,
+    source TEXT DEFAULT 'manual',
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+INSERT OR IGNORE INTO identity (key, value) VALUES
+    ('name', '{name}'),
+    ('active_goal', 'Not set'),
+    ('focus_active', 'false');
+CREATE INDEX IF NOT EXISTS idx_events_at ON events(happened_at);
+CREATE INDEX IF NOT EXISTS idx_ideas_at ON ideas(captured_at);
+CREATE INDEX IF NOT EXISTS idx_health_metric ON health(metric);</code></pre>
+<hr>
+<h2>A.6 &mdash; Glossary</h2>
+<p><strong>API</strong> &mdash; A set of rules that lets two pieces of software communicate in an agreed format.</p>
+<p><strong>BCI</strong> &mdash; A device that reads electrical brain signals and converts them into digital data.</p>
+<p><strong>Container</strong> &mdash; An isolated package holding software and everything it needs to run, separate from the rest of your computer.</p>
+<p><strong>Context window</strong> &mdash; The maximum amount of text an AI model can hold in its attention during a single conversation.</p>
+<p><strong>Docker</strong> &mdash; A tool that runs software inside containers so it does not interfere with other things on your computer.</p>
+<p><strong>JSON</strong> &mdash; A text format for structured data using name-value pairs that both humans and computers can read.</p>
+<p><strong>LLM</strong> &mdash; An AI model trained on large amounts of text that can understand and generate human language.</p>
+<p><strong>MCP</strong> &mdash; An open standard defining a universal way for AI models to connect to external tools and data sources.</p>
+<p><strong>Mesh network</strong> &mdash; A network where every device connects directly to every other device rather than through a central server.</p>
+<p><strong>Ollama</strong> &mdash; A tool that lets you download and run AI models directly on your own computer.</p>
+<p><strong>Port</strong> &mdash; A numbered channel through which a specific piece of software sends and receives network traffic.</p>
+<p><strong>RAG</strong> &mdash; A technique where relevant information is retrieved from a database and added to an AI prompt before generating a response.</p>
+<p><strong>SQLite</strong> &mdash; A lightweight database stored in a single file with no separate server process required.</p>
+<p><strong>System prompt</strong> &mdash; Instructions sent to an AI model before the conversation begins that define its role, rules, and context.</p>
+<p><strong>Tailscale</strong> &mdash; A tool creating a private encrypted network connecting your devices so they communicate securely from anywhere.</p>
+<p><strong>Tasker</strong> &mdash; An Android app that automates phone actions based on conditions like time, location, or which app is open.</p>
+<p><strong>Webhook</strong> &mdash; A URL that receives an automatic notification when a specific event occurs, triggering code listening at that URL.</p>
+<p><strong>Whisper</strong> &mdash; An open source speech recognition model that converts audio to text and runs locally on your computer.</p>
+<hr>
+<h2>A.7 &mdash; License</h2>
+<pre><code>MIT License
+Copyright (c) 2026 Muhammad Umer Khan
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files, to deal
+in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+Fork it. Build on it. Make it yours. That is what the license is for.</code></pre>`
+}
+,{
+  num:"ABT",
+  color:"amber",
+  name:"About This Document",
+  sub:"Why this exists. Who wrote it.",
+  content:`<span class="ch-eyebrow">ABOUT</span>
+<h1>About This Document</h1>
+<div class="milestone"><div class="milestone-label">STATUS &middot; NOVEMBER 2026</div><p>This is a design document, not a record of a finished build. The architecture is planned. The system is not running yet. I wrote the plan with AI assistance and I will be learning the tools hands on as I build each layer.</p></div>
+<p>I grew up watching technology happen. Not studying it, just watching it, the way you watch something that feels like it is moving toward you and you are not sure yet what to do when it arrives. Science fiction was everywhere. AI assistants in films. Systems that knew their owners. The idea of a Jarvis was floating around in the culture before I had any framework to understand what it actually meant or whether it was possible.</p>
+<p>Then I started using AI. Not for projects. Not for school. Just talking. Hours of it. And somewhere in those hours a picture started forming of what this thing could actually be &mdash; not the Hollywood version with the British accent and the holographic displays, but a real version. Built from tools that exist today, running on a PC I already own, free, shaped entirely around one person.</p>
+<p>I am someone who talks to himself a lot. I have always wanted something to share that with, something that listens and remembers and does not need context re-explained every time. Before AI that desire was just a vague fictional thing. After spending real time with it, I could finally see what I had actually been wanting. Not Jarvis the character. Continuity. A system that knows me because it has been paying attention.</p>
+<p>HUMEROS is my attempt to design that system properly before I build it.</p>
+<hr>
+<h2>On Writing This With AI</h2>
+<p>I wrote this with AI and I want to be direct about what that means.</p>
+<p>The thinking is mine. The architecture decisions, the reasons one tool over another, the privacy line, the five layers, the daily loop, the reasons this matters to me specifically &mdash; all of that came from my head during conversations I initiated and directed. What I used AI for is what AI is genuinely good at: research, writing clearly, connecting things I already knew into a structure that would take me weeks to produce alone.</p>
+<p>Everyone is using AI right now. The question is not whether to use it but whether you are using it to think or to avoid thinking. I used it to write what I was already thinking. That is a tool doing its job.</p>
+<p>I am also not claiming HUMEROS is an original invention. Personal AI systems exist. What is mine is the specific shape of the idea, the specific problem it is solving, and the specific person it is designed for.</p>
+<hr>
+<h2>What I Am Actually Looking Forward To</h2>
+<p>This document is a bucket list item written down before it is checked off.</p>
+<p>I do not know exactly when I will build HUMEROS. I know I will. I also know that ideas left only in your head compete with every other idea in there and most of them lose. Writing this was the act of making it real enough to survive until I have the time and resources to execute it properly.</p>
+<p>If you read HEX and it helps you build something similar for yourself, that is genuinely the best version of what this could do. The problem here &mdash; too much to do, too many ideas, not enough structure &mdash; is not that personal.</p>
+<p>The ownership I am looking forward to is not of the idea. It is of the built thing &mdash; the one actually running on my PC someday, sending me a morning briefing that knows what I am working on, capturing my ideas at 11pm, noticing when I have been off track and saying something without me asking. That version, when it exists, will be entirely mine. This document is the promise I made to myself that it will.</p>
+<hr>
+<p style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:2rem">Muhammad Umer Khan &nbsp;&middot;&nbsp; 2026 &nbsp;&middot;&nbsp; MIT License</p>`
+}
+];
+
+const COLORS = ['amber','blue','green','purple'];
+let current = 0;
+
+function colorFor(i){ return COLORS[i % COLORS.length]; }
+
+function buildGrid(){
+  const grid = document.getElementById('chapterGrid');
+  CHAPTERS.forEach((ch,i)=>{
+    const card = document.createElement('div');
+    card.className = 'ch-card';
+    card.onclick = ()=>openReader(i);
+    card.innerHTML = `<span class="ch-num ${colorFor(i)}">${ch.num}</span>
+<p class="ch-name">${ch.name}</p>
+<p class="ch-sub">${ch.sub}</p>`;
+    grid.appendChild(card);
+  });
+}
+
+function buildNav(){
+  const nav = document.getElementById('readerNav');
+  nav.innerHTML = '';
+  CHAPTERS.forEach((ch,i)=>{
+    const item = document.createElement('div');
+    item.className = 'r-ch-item' + (i===current?' active':'');
+    item.id = 'nav-'+i;
+    item.onclick = ()=>goTo(i);
+    item.innerHTML = `<div class="r-ch-num">${ch.num}</div>
+<div class="r-ch-name">${ch.name}</div>`;
+    nav.appendChild(item);
+  });
+}
+
+function openReader(i){
+  current = i;
+  document.getElementById('reader').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  buildNav();
+  renderChapter();
+}
+
+function closeReader(){
+  document.getElementById('reader').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function goTo(i){
+  current = i;
+  buildNav();
+  renderChapter();
+  document.getElementById('rContent').scrollTop = 0;
+}
+
+function navigate(dir){
+  const next = current + dir;
+  if(next >= 0 && next < CHAPTERS.length) goTo(next);
+}
+
+function renderChapter(){
+  const ch = CHAPTERS[current];
+  document.getElementById('rArticle').innerHTML = ch.content;
+  document.getElementById('chIndicator').textContent = (current+1) + ' / ' + CHAPTERS.length;
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === CHAPTERS.length-1;
+  const pct = Math.round((current+1)/CHAPTERS.length*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('topbarFill').style.width = pct+'%';
+  document.getElementById('progressPct').textContent = pct+'%';
+  addCopyButtons();
+}
+
+function addCopyButtons(){
+  document.querySelectorAll('.r-article pre').forEach(pre=>{
+    if(pre.querySelector('.copy-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    btn.onclick = ()=>{
+      const code = pre.querySelector('code');
+      navigator.clipboard.writeText(code.textContent).then(()=>{
+        btn.textContent = 'copied';
+        setTimeout(()=>btn.textContent='copy',2000);
+      });
+    };
+    pre.appendChild(btn);
+  });
+}
+
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('reader').classList.contains('open')){
+    if(e.key==='ArrowRight') navigate(1);
+    if(e.key==='ArrowLeft') navigate(-1);
+    if(e.key==='Escape') closeReader();
+  }
+});
+
+
+function toggleTheme(){
+  const isLight = document.body.classList.toggle("light");
+  const lbl = isLight ? "dark mode" : "light mode";
+  const lblS = isLight ? "dark" : "light";
+  const b1 = document.getElementById("themeBtn");
+  const b2 = document.getElementById("themeBtnR");
+  if(b1) b1.textContent = lbl;
+  if(b2) b2.textContent = lblS;
+  try{ localStorage.setItem("hex-theme", isLight ? "light" : "dark"); }catch(e){}
+}
+(function(){
+  try{
+    if(localStorage.getItem("hex-theme")==="light"){
+      document.body.classList.add("light");
+    }
+  }catch(e){}
+})();
+
+buildGrid();
+</script>
+</body>
+</html>
